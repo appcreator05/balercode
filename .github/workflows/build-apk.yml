@@ -1,0 +1,96 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build VDOSKy Release APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web application
+        run: npm run build
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Configure & Sync Capacitor Android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      - name: Setup Release Keystore
+        run: |
+          mkdir -p android/app
+          if [ ! -f "android/app/release.keystore" ]; then
+            echo "Restoring official AppInventor release keystore..."
+            echo "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" | base64 -d > android/app/release.keystore
+          fi
+
+      - name: Build Android Release APK
+        working-directory: android
+        env:
+          KEYSTORE_PASSWORD: "android"
+          KEY_ALIAS: "androidkey"
+          KEY_PASSWORD: "android"
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
+
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VDOSKy-Release-APK
+          path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Prepare Release APK
+        run: |
+          RELEASE_APK=$(find android/app/build/outputs/apk/release -name "*release*.apk" | head -n 1)
+          if [ -n "$RELEASE_APK" ]; then
+            echo "Found Release APK: $RELEASE_APK"
+            cp "$RELEASE_APK" VDOSKy.apk
+          else
+            echo "Error: Release APK not found"
+            find android/app/build/outputs -type f || true
+            exit 1
+          fi
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: VDOSKy App Official Release v1.0.${{ github.run_number }}
+          body: "Official Release APK for VDOSKy Android App with Voice Search, Fullscreen Landscape, Screen Wake Lock, and 3000+ Movies Streaming."
+          files: VDOSKy.apk
