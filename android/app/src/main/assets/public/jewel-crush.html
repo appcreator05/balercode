@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jewel Crush - VDOSKy Games</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-light: #2c1605;
+            --primary: #78350f;
+            --accent: #f59e0b;
+            --border-wood: #b45309;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html { 
+            background: #090604; 
+            margin: 0; 
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-wrapper {
+            width: 100%; 
+            max-width: 440px; 
+            height: 100vh;
+            max-height: 720px;
+            background: radial-gradient(circle at center, #3b1d07 0%, #1c0c02 100%); 
+            border: 6px solid var(--border-wood); 
+            border-radius: 24px; 
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(245, 158, 11, 0.2); 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            background: linear-gradient(180deg, #92400e 0%, #78350f 100%); 
+            color: white; 
+            padding: max(10px, env(safe-area-inset-top)) 14px 10px 14px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 4px solid #451a03;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-size: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.1s ease, background 0.15s;
+            cursor: pointer;
+        }
+        .back-btn:active {
+            transform: scale(0.92);
+            background: rgba(245, 158, 11, 0.6);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .level-pill {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #fde68a;
+            border: 1px solid rgba(253, 230, 138, 0.3);
+        }
+
+        .score-box {
+            background: #ffffff; 
+            color: #1e293b; 
+            padding: 4px 18px;
+            border-radius: 50px; 
+            font-weight: 900; 
+            font-size: 18px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sound-btn {
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+        }
+
+        .target-bar {
+            background: linear-gradient(90deg, #d97706 0%, #b45309 50%, #d97706 100%); 
+            color: white; 
+            padding: 8px 12px;
+            text-align: center; 
+            font-weight: 800;
+            font-size: 14px;
+            border-bottom: 2px solid #78350f;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .grid-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            min-height: 0;
+        }
+
+        #grid {
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr);
+            grid-gap: 5px; 
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 8px;
+            border-radius: 16px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            box-sizing: border-box;
+        }
+
+        .cell {
+            aspect-ratio: 1; 
+            display: flex; 
+            align-items: center;
+            justify-content: center; 
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.12); 
+            border-radius: 10px;
+            transition: transform 0.15s ease, background 0.15s ease; 
+            padding: 4px; 
+            box-sizing: border-box;
+            position: relative;
+        }
+        .cell:active {
+            transform: scale(0.95);
+        }
+
+        .cell img, .cell svg { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            pointer-events: none;
+        }
+
+        .selected { 
+            transform: scale(1.12); 
+            background: rgba(245, 158, 11, 0.6) !important; 
+            outline: 3px solid #ffffff; 
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.9);
+            z-index: 5;
+        }
+
+        .matched-pop {
+            animation: matchPop 0.3s ease forwards;
+        }
+
+        @keyframes matchPop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.8; }
+            100% { transform: scale(0.2); opacity: 0; }
+        }
+
+        #overlay {
+            display: none; 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(15, 7, 2, 0.92); 
+            color: white; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+            text-align: center;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .overlay-card {
+            background: linear-gradient(135deg, #78350f 0%, #451a03 100%);
+            border: 3px solid var(--accent);
+            border-radius: 20px;
+            padding: 30px 24px;
+            width: 90%;
+            max-width: 320px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+            border: none; 
+            padding: 14px 34px; 
+            font-size: 18px; 
+            font-weight: 800; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            color: #1c0c02; 
+            margin-top: 20px;
+            box-shadow: 0 6px 0 #92400e, 0 10px 20px rgba(245, 158, 11, 0.4);
+            letter-spacing: 0.5px;
+            transition: transform 0.1s ease;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #92400e, 0 4px 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .footer-bar {
+            padding: 8px 14px max(10px, env(safe-area-inset-bottom)) 14px;
+            text-align: center;
+            font-size: 12px;
+            color: #d2b48c;
+            background: rgba(0, 0, 0, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div class="header">
+        <a href="index.html?view=games" class="back-btn" onclick="goBack(); return false;" title="Back to Games">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="header-content">
+            <div class="level-pill">Level: <span id="lvl-num">1</span></div>
+            <div class="score-box">
+                <i class="fa-solid fa-star" style="color: #f59e0b; font-size: 15px;"></i>
+                <span id="score">0</span>
+            </div>
+        </div>
+        <div class="sound-btn" onclick="toggleAudio()" title="Sound Toggle">
+            <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+        </div>
+    </div>
+    
+    <div class="target-bar">
+        <span>Target: <b id="target-score" style="color: #fef08a;">1000</b></span>
+        <span>Best: <b id="best-score" style="color: #67e8f9;">0</b></span>
+    </div>
+
+    <div class="grid-container">
+        <div id="grid"></div>
+    </div>
+
+    <div class="footer-bar">
+        <span>Swap adjacent jewels to match 3 or more!</span>
+        <span id="streak-indicator" style="font-weight: 700; color: #f59e0b;"></span>
+    </div>
+
+    <div id="overlay">
+        <div class="overlay-card">
+            <div style="font-size: 46px; margin-bottom: 8px;">🎉</div>
+            <h2 id="status-text" style="margin: 0 0 8px 0; font-size: 26px; color: #fef08a;">Level Complete!</h2>
+            <p id="sub-text" style="color: #fed7aa; margin: 0; font-size: 14px;">You reached the target score!</p>
+            <button class="btn" onclick="nextLevel()">Next Level</button>
+        </div>
+    </div>
+</div>
+
+<audio id="bgMusic" loop preload="none">
+    <source src="https://cdn.jsdelivr.net/gh/appcreator05/user@main/You-Know-Me.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    const grid = document.getElementById('grid');
+    const scoreEl = document.getElementById('score');
+    const lvlEl = document.getElementById('lvl-num');
+    const targetScoreEl = document.getElementById('target-score');
+    const bestScoreEl = document.getElementById('best-score');
+    const overlay = document.getElementById('overlay');
+    const bgMusic = document.getElementById('bgMusic');
+    const soundIcon = document.getElementById('sound-icon');
+    const streakIndicator = document.getElementById('streak-indicator');
+
+    let isSoundOn = true;
+    let musicStarted = false;
+    let bestScore = parseInt(localStorage.getItem('jewel_crush_best_score') || '0', 10);
+    bestScoreEl.innerText = bestScore;
+
+    function goBack() {
+        window.location.href = 'index.html?view=games';
+    }
+
+    function toggleAudio() {
+        isSoundOn = !isSoundOn;
+        if (isSoundOn) {
+            soundIcon.className = "fa-solid fa-volume-high";
+            if (musicStarted) bgMusic.play().catch(() => {});
+        } else {
+            soundIcon.className = "fa-solid fa-volume-xmark";
+            bgMusic.pause();
+        }
+    }
+
+    // Audio synthesizer for crisp jewel clicks and crush sounds
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    function playChime(freq1 = 523, freq2 = 659) {
+        if (!isSoundOn) return;
+        try {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + 0.18);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        } catch(e) {}
+    }
+
+    const width = 7;
+    const jewelSVGs = {
+        'diamond': '<svg viewBox="0 0 100 100"><defs><linearGradient id="g1"><stop offset="0%" style="stop-color:#99dfff"/><stop offset="100%" style="stop-color:#2a8bff"/></linearGradient></defs><path fill="url(#g1)" d="M50 5 L95 50 L50 95 L5 50 Z" stroke="#fff" stroke-width="2.5"/></svg>',
+        'star': '<svg viewBox="0 0 100 100"><defs><linearGradient id="g2"><stop offset="0%" style="stop-color:#ffe066"/><stop offset="100%" style="stop-color:#ff9900"/></linearGradient></defs><path fill="url(#g2)" d="M50 5 L64 35 L95 40 L72 62 L78 95 L50 78 L22 95 L28 62 L5 40 L36 35 Z" stroke="#fff" stroke-width="2"/></svg>',
+        'emerald': '<svg viewBox="0 0 100 100"><defs><linearGradient id="g3"><stop offset="0%" style="stop-color:#a8ff78"/><stop offset="100%" style="stop-color:#20bf55"/></linearGradient></defs><path fill="url(#g3)" d="M30 10 L70 10 L90 30 L90 70 L70 90 L30 90 L10 70 L10 30 Z" stroke="#fff" stroke-width="2"/></svg>',
+        'purple': '<svg viewBox="0 0 100 100"><defs><linearGradient id="g4"><stop offset="0%" style="stop-color:#da44bb"/><stop offset="100%" style="stop-color:#8921aa"/></linearGradient></defs><path fill="url(#g4)" d="M50 5 L90 30 L90 70 L50 95 L10 70 L10 30 Z" stroke="#fff" stroke-width="2"/></svg>',
+        'ruby': '<svg viewBox="0 0 100 100"><defs><linearGradient id="g5"><stop offset="0%" style="stop-color:#ff6b6b"/><stop offset="100%" style="stop-color:#c0392b"/></linearGradient></defs><circle cx="50" cy="50" r="42" fill="url(#g5)" stroke="#fff" stroke-width="2.5"/><circle cx="38" cy="38" r="10" fill="rgba(255,255,255,0.4)"/></svg>',
+        'mylogo': '<img src="https://cdn.razorpay.com/logos/SAYOa6EJbvm5da_medium.png" onerror="this.outerHTML=\'<svg viewBox=\\\'0 0 100 100\\\'><circle cx=\\\'50\\\' cy=\\\'50\\\' r=\\\'40\\\' fill=\\\'#00ff88\\\' stroke=\\\'#fff\\\' stroke-width=\\\'3\\\'/></svg>\'">'
+    };
+
+    const jewelNames = Object.keys(jewelSVGs);
+    let board = [];
+    let score = 0;
+    let currentLevel = 1;
+    let selectedCell = null;
+    let isGameOver = false;
+
+    function getTarget() {
+        return currentLevel * 1000;
+    }
+
+    function init() {
+        board = [];
+        grid.innerHTML = '';
+        lvlEl.innerText = currentLevel;
+        scoreEl.innerText = score;
+        targetScoreEl.innerText = getTarget();
+        
+        for (let i = 0; i < width * width; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.id = i;
+            let randomName = jewelNames[Math.floor(Math.random() * jewelNames.length)];
+            cell.innerHTML = jewelSVGs[randomName];
+            cell.dataset.name = randomName;
+            cell.onclick = () => {
+                startMusic();
+                handleClick(cell);
+            };
+            grid.appendChild(cell);
+            board.push(cell);
+        }
+        isGameOver = false;
+    }
+
+    function startMusic() {
+        if (!musicStarted && isSoundOn) {
+            bgMusic.play().catch(e => console.log("Autoplay blocked, waiting for click."));
+            musicStarted = true;
+        }
+    }
+
+    function handleClick(cell) {
+        if (isGameOver) return;
+        if (selectedCell) {
+            let id1 = parseInt(selectedCell.id);
+            let id2 = parseInt(cell.id);
+            const isNeighbor = [id1-1, id1+1, id1-width, id1+width].includes(id2);
+            if (isNeighbor) {
+                swap(selectedCell, cell);
+                if (!checkMatches()) {
+                    setTimeout(() => swap(cell, selectedCell), 300);
+                } else {
+                    playChime(580, 880);
+                }
+            }
+            selectedCell.classList.remove('selected');
+            selectedCell = null;
+        } else {
+            selectedCell = cell;
+            selectedCell.classList.add('selected');
+            playChime(440, 440);
+        }
+    }
+
+    function swap(c1, c2) {
+        let tH = c1.innerHTML; let tN = c1.dataset.name;
+        c1.innerHTML = c2.innerHTML; c1.dataset.name = c2.dataset.name;
+        c2.innerHTML = tH; c2.dataset.name = tN;
+    }
+
+    function checkMatches() {
+        let matchFound = false;
+        let cellsToRemove = new Set();
+
+        for (let i = 0; i < width * width; i++) {
+            let name = board[i].dataset.name;
+            if (i % width < width - 2) {
+                if (board[i+1].dataset.name === name && board[i+2].dataset.name === name) {
+                    cellsToRemove.add(i); cellsToRemove.add(i+1); cellsToRemove.add(i+2);
+                    matchFound = true;
+                }
+            }
+            if (i < width * (width - 2)) {
+                if (board[i+width].dataset.name === name && board[i+width*2].dataset.name === name) {
+                    cellsToRemove.add(i); cellsToRemove.add(i+width); cellsToRemove.add(i+width*2);
+                    matchFound = true;
+                }
+            }
+        }
+
+        if (matchFound) {
+            cellsToRemove.forEach(idx => {
+                let cell = board[idx];
+                cell.classList.add('matched-pop');
+                setTimeout(() => {
+                    let randomName = jewelNames[Math.floor(Math.random() * jewelNames.length)];
+                    cell.innerHTML = jewelSVGs[randomName];
+                    cell.dataset.name = randomName;
+                    cell.classList.remove('matched-pop');
+                }, 200);
+            });
+
+            score += (cellsToRemove.size * 10); 
+            scoreEl.innerText = score;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestScoreEl.innerText = bestScore;
+                localStorage.setItem('jewel_crush_best_score', bestScore.toString());
+            }
+
+            if (score >= getTarget()) {
+                isGameOver = true;
+                document.getElementById('status-text').innerText = "Level " + currentLevel + " Complete! 🎉";
+                document.getElementById('sub-text').innerText = "Target of " + getTarget() + " reached!";
+                overlay.style.display = 'flex';
+                playChime(659, 1046);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function nextLevel() {
+        currentLevel++;
+        overlay.style.display = 'none';
+        init();
+    }
+
+    init();
+    setInterval(checkMatches, 700);
+</script>
+
+</body>
+</html>

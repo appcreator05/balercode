@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Car Racing Game - VDOSKy Games</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #0b0e14;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .screen-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0b0e14;
+            position: relative;
+        }
+
+        .game-wrapper { 
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            background: #1e1e1e;
+            position: relative;
+            touch-action: none;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+        }
+      
+        #gameArea {
+            width: 100%;
+            height: 100%;
+            background: #262626;
+            border-left: 10px dashed #555;
+            border-right: 10px dashed #555;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Player Car (Red) --- */
+        .car {
+            width: 50px;
+            height: 82px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            background: linear-gradient(180deg, #ff4d4d 0%, #c0392b 100%);
+            border-radius: 9px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            will-change: transform;
+        }
+        .car::before {
+            content: '';
+            position: absolute;
+            width: 10px; height: 16px; background: #111;
+            left: -8px; top: 12px;
+            box-shadow: 56px 0 0 #111, 0 44px 0 #111, 56px 44px 0 #111;
+            border-radius: 3px;
+        }
+        .car::after {
+            content: '';
+            position: absolute;
+            width: 34px; height: 42px;
+            background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+            left: 8px; top: 6px;
+            border-radius: 50% 50% 12% 12%;
+            opacity: 0.88;
+            border-top: 5px solid #991b1b;
+        }
+        .car .headlights {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            right: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .car .headlights span {
+            width: 8px;
+            height: 5px;
+            background: #fef08a;
+            border-radius: 2px;
+            box-shadow: 0 -3px 8px #fef08a;
+        }
+
+        /* --- Enemy Car (Blue) --- */
+        .enemy {
+            width: 50px;
+            height: 82px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 4;
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+            border-radius: 9px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            will-change: transform;
+        }
+        .enemy::before {
+            content: '';
+            position: absolute;
+            width: 10px; height: 16px; background: #111;
+            left: -8px; top: 12px;
+            box-shadow: 56px 0 0 #111, 0 44px 0 #111, 56px 44px 0 #111;
+            border-radius: 3px;
+        }
+        .enemy::after {
+            content: '';
+            position: absolute;
+            width: 34px; height: 42px;
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+            left: 8px; top: 6px;
+            border-radius: 50% 50% 12% 12%;
+            opacity: 0.88;
+            border-top: 5px solid #0369a1;
+        }
+
+        .line {
+            width: 8px;
+            height: 90px;
+            background: #ffffff;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-radius: 3px;
+            box-shadow: 0 0 5px rgba(255,255,255,0.4);
+            will-change: transform;
+        }
+
+        /* --- Score Style --- */
+        #score-box {
+            position: absolute;
+            top: max(14px, env(safe-area-inset-top));
+            right: 14px;
+            color: #facc15;
+            font-size: 15px;
+            font-weight: 800;
+            background: rgba(15, 23, 42, 0.88);
+            padding: 8px 16px;
+            border-radius: 20px;
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.18);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* --- Sound Toggle --- */
+        #sound-btn {
+            position: absolute;
+            top: max(14px, env(safe-area-inset-top));
+            right: 130px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.88);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.18);
+            cursor: pointer;
+        }
+
+        /* --- Back Icon Style --- */
+        .back-btn {
+            position: absolute;
+            top: max(14px, env(safe-area-inset-top));
+            left: 14px; 
+            background: rgba(15, 23, 42, 0.88);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .back-btn:active {
+            transform: scale(0.92);
+            background: rgba(231, 76, 60, 0.9);
+        }
+
+        .startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.94);
+            border: 2px solid #e74c3c;
+            color: white;
+            z-index: 40;
+            text-align: center;
+            padding: 28px 24px;
+            width: 86%;
+            max-width: 360px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.8), 0 0 25px rgba(231, 76, 60, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .startScreen h2 {
+            margin: 0 0 8px 0;
+            font-size: 30px;
+            font-weight: 900;
+            color: #ef4444;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(239,68,68,0.5);
+        }
+        .startScreen p {
+            margin: 0 0 16px 0;
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.5;
+            font-weight: normal;
+        }
+        .start-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #fff;
+            border: none;
+            padding: 14px 34px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #7f1d1d, 0 10px 20px rgba(239, 68, 68, 0.4);
+            letter-spacing: 0.5px;
+            display: inline-block;
+            transition: transform 0.1s ease;
+        }
+        .start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #7f1d1d, 0 4px 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .control-btn {
+            width: 76px;
+            height: 76px;
+            background: rgba(15, 23, 42, 0.82);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            font-size: 28px;
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: auto;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+            transition: transform 0.08s ease, background 0.08s ease, border-color 0.08s ease;
+            touch-action: none;
+        }
+        .control-btn:active, .control-btn.active { 
+            background: rgba(239, 68, 68, 0.9); 
+            border-color: #f87171;
+            transform: scale(0.92);
+        }
+
+        .crash-flash {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 0, 0, 0.4);
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop preload="none">
+        <source src="https://cdn.jsdelivr.net/gh/appcreator05/user@main/You-Know-Me.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="screen-container">
+        <div class="game-wrapper">
+            <a href="index.html?view=games" class="back-btn" onclick="goBack(); return false;" title="Back to Games">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+
+            <div id="sound-btn" onclick="toggleSound()" title="Sound Toggle">
+                <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+            </div>
+
+            <div id="score-box">
+                <i class="fa-solid fa-trophy"></i>
+                <span id="score-val">0</span>
+            </div>
+
+            <div class="startScreen" id="startScreen">
+                <div style="font-size: 40px; color: #ef4444; margin-bottom: 8px;">
+                    <i class="fa-solid fa-car-burst"></i>
+                </div>
+                <h2>CAR RACING</h2>
+                <p>Avoid incoming traffic! Tap or hold left/right buttons, use keyboard arrows, or drag on the road to steer.</p>
+                <div style="color: #38bdf8; font-size: 14px; margin-bottom: 18px; font-weight: 700;" id="high-score-tag">
+                    Best Record: 0
+                </div>
+                <button class="start-btn" onclick="start()">TAP TO START</button>
+            </div>
+
+            <div id="gameArea"></div>
+            <div id="crashFlash" class="crash-flash"></div>
+
+            <div class="controls">
+                <div class="control-btn" id="leftBtn"><i class="fa-solid fa-caret-left"></i></div>
+                <div class="control-btn" id="rightBtn"><i class="fa-solid fa-caret-right"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scoreVal = document.querySelector('#score-val');
+        const startScreen = document.querySelector('#startScreen');
+        const gameArea = document.querySelector('#gameArea');
+        const leftBtn = document.querySelector('#leftBtn');
+        const rightBtn = document.querySelector('#rightBtn');
+        const music = document.getElementById('bgMusic');
+        const crashFlash = document.getElementById('crashFlash');
+        const soundIcon = document.getElementById('sound-icon');
+        const highScoreTag = document.getElementById('high-score-tag');
+
+        let isSoundOn = true;
+        let highScore = parseInt(localStorage.getItem('car_racing_high_score') || '0', 10);
+        if (highScoreTag) highScoreTag.innerText = "Best Record: " + highScore;
+
+        function goBack() {
+            window.location.href = 'index.html?view=games';
+        }
+
+        function toggleSound() {
+            isSoundOn = !isSoundOn;
+            if (isSoundOn) {
+                soundIcon.className = "fa-solid fa-volume-high";
+                if (player.start) music.play().catch(() => {});
+            } else {
+                soundIcon.className = "fa-solid fa-volume-xmark";
+                music.pause();
+            }
+        }
+
+        // Lightweight Web Audio synthesizer for crash sound
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        function playCrashSound() {
+            if (!isSoundOn) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.35);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.35);
+            } catch (e) {}
+        }
+
+        // Cached entities for 60/120 FPS performance (zero querySelectorAll during game loop)
+        let player = { speed: 8.5, score: 0, start: false, x: 0, y: 0 };
+        let keys = { ArrowLeft: false, ArrowRight: false };
+        let carEl = null;
+        let lineElements = [];
+        let enemyElements = [];
+        let roadWidth = 360;
+        let roadHeight = 600;
+        let animationFrameId = null;
+        let lastTimestamp = 0;
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                keys.ArrowLeft = true;
+                leftBtn.classList.add('active');
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                keys.ArrowRight = true;
+                rightBtn.classList.add('active');
+            }
+        });
+        document.addEventListener('keyup', (e) => { 
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                keys.ArrowLeft = false;
+                leftBtn.classList.remove('active');
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                keys.ArrowRight = false;
+                rightBtn.classList.remove('active');
+            }
+        });
+
+        // Touch & mouse controls for on-screen buttons
+        function setupBtn(el, key) {
+            const startPress = (e) => {
+                if (e.cancelable) e.preventDefault();
+                keys[key] = true;
+                el.classList.add('active');
+            };
+            const endPress = (e) => {
+                if (e.cancelable) e.preventDefault();
+                keys[key] = false;
+                el.classList.remove('active');
+            };
+
+            el.addEventListener('touchstart', startPress, { passive: false });
+            el.addEventListener('touchend', endPress, { passive: false });
+            el.addEventListener('touchcancel', endPress, { passive: false });
+
+            el.addEventListener('mousedown', startPress);
+            el.addEventListener('mouseup', endPress);
+            el.addEventListener('mouseleave', endPress);
+        }
+        setupBtn(leftBtn, 'ArrowLeft');
+        setupBtn(rightBtn, 'ArrowRight');
+
+        // Direct screen touch steering (tapping left or right half of the game area, or dragging finger)
+        let isTouchingRoad = false;
+        let touchTargetX = null;
+
+        gameArea.addEventListener('touchstart', (e) => {
+            if (!player.start) return;
+            const touch = e.touches[0];
+            const rect = gameArea.getBoundingClientRect();
+            const relX = touch.clientX - rect.left;
+            isTouchingRoad = true;
+            touchTargetX = relX - 25; // center car to touch
+
+            if (relX < rect.width * 0.45) {
+                keys.ArrowLeft = true;
+                keys.ArrowRight = false;
+                leftBtn.classList.add('active');
+                rightBtn.classList.remove('active');
+            } else if (relX > rect.width * 0.55) {
+                keys.ArrowRight = true;
+                keys.ArrowLeft = false;
+                rightBtn.classList.add('active');
+                leftBtn.classList.remove('active');
+            }
+        }, { passive: true });
+
+        gameArea.addEventListener('touchmove', (e) => {
+            if (!player.start || !isTouchingRoad) return;
+            const touch = e.touches[0];
+            const rect = gameArea.getBoundingClientRect();
+            const relX = touch.clientX - rect.left;
+            touchTargetX = relX - 25;
+        }, { passive: true });
+
+        const endRoadTouch = () => {
+            isTouchingRoad = false;
+            touchTargetX = null;
+            keys.ArrowLeft = false;
+            keys.ArrowRight = false;
+            leftBtn.classList.remove('active');
+            rightBtn.classList.remove('active');
+        };
+        gameArea.addEventListener('touchend', endRoadTouch, { passive: true });
+        gameArea.addEventListener('touchcancel', endRoadTouch, { passive: true });
+
+        // Ultra-fast math AABB collision (ZERO getBoundingClientRect / forced layout reflow)
+        function checkCollision(pX, pY, eX, eY) {
+            // Player car: 50x82 (inner collision box ~40x72 with 5px padding)
+            return !(
+                pX + 44 < eX + 6 ||
+                pX + 6 > eX + 44 ||
+                pY + 74 < eY + 8 ||
+                pY + 8 > eY + 74
+            );
+        }
+
+        function endGame() {
+            player.start = false;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            playCrashSound();
+            music.pause(); 
+            music.currentTime = 0;
+
+            if (crashFlash) {
+                crashFlash.style.opacity = '1';
+                setTimeout(() => { crashFlash.style.opacity = '0'; }, 300);
+            }
+
+            if (player.score > highScore) {
+                highScore = player.score;
+                localStorage.setItem('car_racing_high_score', highScore.toString());
+            }
+
+            startScreen.innerHTML = `
+                <div style="font-size: 40px; color: #ef4444; margin-bottom: 8px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h2>CRASHED!</h2>
+                <div style="font-size: 24px; color: #facc15; font-weight: 800; margin-bottom: 6px;">
+                    Score: ${player.score}
+                </div>
+                <div style="font-size: 14px; color: #94a3b8; margin-bottom: 20px;">
+                    Best Record: ${highScore}
+                </div>
+                <button class="start-btn" onclick="start()">PLAY AGAIN</button>
+            `;
+            startScreen.style.display = "block";
+        }
+
+        // High performance 60/120 FPS game loop with delta-time normalization
+        function gamePlay(timestamp) {
+            if (!player.start) return;
+
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            let delta = (timestamp - lastTimestamp) / 16.666;
+            if (delta > 2.2) delta = 2.2;
+            if (delta < 0.2) delta = 0.2;
+            lastTimestamp = timestamp;
+
+            const effectiveSpeed = player.speed * delta;
+            const steerSpeed = (10.5 + player.speed * 0.15) * delta;
+
+            // 1. Move road divider dashed lines (GPU translate3d)
+            const lineH = roadHeight;
+            for (let i = 0; i < lineElements.length; i++) {
+                const line = lineElements[i];
+                line.y += effectiveSpeed;
+                if (line.y >= lineH) {
+                    line.y -= (lineH + 130);
+                }
+                line.el.style.transform = `translate3d(-50%, ${line.y}px, 0)`;
+            }
+
+            // 2. Direct finger drag interpolation
+            if (isTouchingRoad && touchTargetX !== null) {
+                const diff = touchTargetX - player.x;
+                if (Math.abs(diff) > 2) {
+                    player.x += diff * 0.22 * delta;
+                }
+            }
+
+            // 3. Steer player car (left / right buttons or arrow keys)
+            let turnAngle = 0;
+            if (keys.ArrowLeft) {
+                player.x -= steerSpeed;
+                turnAngle = -5;
+            } else if (keys.ArrowRight) {
+                player.x += steerSpeed;
+                turnAngle = 5;
+            }
+
+            // Boundary constraints
+            const minX = 8;
+            const maxX = roadWidth - 58;
+            if (player.x < minX) player.x = minX;
+            if (player.x > maxX) player.x = maxX;
+
+            // Render player car with GPU transform
+            carEl.style.transform = `translate3d(${player.x}px, ${player.y}px, 0) rotate(${turnAngle}deg)`;
+
+            // 4. Move and check enemy cars
+            for (let i = 0; i < enemyElements.length; i++) {
+                const enemy = enemyElements[i];
+
+                // Collision detection (Pure math, zero DOM reflow!)
+                if (checkCollision(player.x, player.y, enemy.x, enemy.y)) {
+                    endGame();
+                    return;
+                }
+
+                // Enemy moves down relative to player
+                enemy.y += (effectiveSpeed * 0.94);
+
+                // Respawn enemy above screen when off-screen
+                if (enemy.y >= roadHeight + 80) {
+                    enemy.y = -350 - (Math.random() * 260);
+                    enemy.x = Math.floor(Math.random() * Math.max(roadWidth - 66, 20)) + 8;
+                }
+
+                // Render enemy car with GPU transform
+                enemy.el.style.transform = `translate3d(${enemy.x}px, ${enemy.y}px, 0)`;
+            }
+
+            // 5. Score and progressive speed
+            player.score += Math.round(1 * delta);
+            scoreVal.innerText = player.score;
+
+            // Smooth speed scaling from 8.5 up to 16
+            player.speed = 8.5 + Math.min(player.score / 220, 7.5);
+
+            animationFrameId = window.requestAnimationFrame(gamePlay);
+        }
+
+        function start() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            startScreen.style.display = "none";
+            gameArea.innerHTML = "";
+            player.start = true;
+            player.score = 0;
+            player.speed = 8.5;
+            lastTimestamp = 0;
+            scoreVal.innerText = "0";
+            
+            if (isSoundOn) {
+                music.currentTime = 0;
+                music.play().catch(e => console.log("Music play blocked by browser."));
+            }
+
+            roadHeight = gameArea.offsetHeight || 600;
+            roadWidth = gameArea.offsetWidth || 360;
+
+            // Setup road lines
+            lineElements = [];
+            const lineSpacing = 140;
+            const totalLines = Math.ceil(roadHeight / lineSpacing) + 2;
+
+            for (let x = 0; x < totalLines; x++) {
+                const roadLine = document.createElement('div');
+                roadLine.setAttribute('class', 'line');
+                const initialY = (x * lineSpacing);
+                roadLine.style.transform = `translate3d(-50%, ${initialY}px, 0)`;
+                gameArea.appendChild(roadLine);
+                lineElements.push({ el: roadLine, y: initialY });
+            }
+
+            // Setup player car
+            carEl = document.createElement('div');
+            carEl.setAttribute('class', 'car');
+            carEl.innerHTML = '<div class="headlights"><span></span><span></span></div>';
+            gameArea.appendChild(carEl);
+
+            player.x = (roadWidth / 2) - 25; 
+            player.y = roadHeight - 125; 
+            carEl.style.transform = `translate3d(${player.x}px, ${player.y}px, 0)`;
+
+            // Setup enemy cars with staggered positions
+            enemyElements = [];
+            const enemyCount = 3;
+            for (let x = 0; x < enemyCount; x++) {
+                const enemyDiv = document.createElement('div');
+                enemyDiv.setAttribute('class', 'enemy');
+                const initialEnemyY = -((x + 1) * 310);
+                const initialEnemyX = Math.floor(Math.random() * Math.max(roadWidth - 66, 20)) + 8;
+                enemyDiv.style.transform = `translate3d(${initialEnemyX}px, ${initialEnemyY}px, 0)`;
+                gameArea.appendChild(enemyDiv);
+                enemyElements.push({ el: enemyDiv, x: initialEnemyX, y: initialEnemyY });
+            }
+
+            animationFrameId = window.requestAnimationFrame(gamePlay);
+        }
+    </script>
+</body>
+</html>
