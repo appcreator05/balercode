@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'http';
 
 export const TARGET_URL = 'https://hdskay.blogspot.com';
 export const FORCED_USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/138.0.0.0 Safari/53';
+  'Mozilla/5.0 (Linux; Android 10; K; AppSecret123) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36';
 
 /**
  * Rewrites all links, forms, and assets in HTML so that every single navigation
@@ -145,7 +145,7 @@ function processHtmlContent(html: string, currentUrl: URL): string {
           enumerable: true
         });
         Object.defineProperty(Navigator.prototype, 'platform', {
-          get: function() { return 'Win32'; },
+          get: function() { return 'Linux armv8l'; },
           set: function() {},
           configurable: true,
           enumerable: true
@@ -154,7 +154,7 @@ function processHtmlContent(html: string, currentUrl: URL): string {
 
       // 3. Lock navigator.appVersion
       Object.defineProperty(navigator, 'appVersion', {
-        get: function() { return FORCED_UA.replace(/^Mozilla\\//, ''); },
+        get: function() { return FORCED_UA.replace(/^Mozilla\//, ''); },
         set: function() {},
         configurable: true,
         enumerable: true
@@ -162,7 +162,7 @@ function processHtmlContent(html: string, currentUrl: URL): string {
 
       // 4. Lock navigator.platform
       Object.defineProperty(navigator, 'platform', {
-        get: function() { return 'Win32'; },
+        get: function() { return 'Linux armv8l'; },
         set: function() {},
         configurable: true,
         enumerable: true
@@ -170,29 +170,37 @@ function processHtmlContent(html: string, currentUrl: URL): string {
 
       // 5. Lock navigator.userAgentData
       if (navigator.userAgentData) {
+        Object.defineProperty(navigator.userAgentData, 'mobile', {
+          get: function() { return true; },
+          configurable: true
+        });
+        Object.defineProperty(navigator.userAgentData, 'platform', {
+          get: function() { return 'Android'; },
+          configurable: true
+        });
         Object.defineProperty(navigator, 'userAgentData', {
           get: function() {
             return {
               brands: [
-                { brand: 'Chromium', version: '138' },
-                { brand: 'Google Chrome', version: '138' },
-                { brand: 'Android WebView', version: '138' }
+                { brand: 'Chromium', version: '152' },
+                { brand: 'Google Chrome', version: '152' },
+                { brand: 'Android WebView', version: '152' }
               ],
-              mobile: false,
-              platform: 'Windows',
+              mobile: true,
+              platform: 'Android',
               getHighEntropyValues: function() {
                 return Promise.resolve({
                   brands: [
-                    { brand: 'Chromium', version: '138' },
-                    { brand: 'Google Chrome', version: '138' },
-                    { brand: 'Android WebView', version: '138' }
+                    { brand: 'Chromium', version: '152' },
+                    { brand: 'Google Chrome', version: '152' },
+                    { brand: 'Android WebView', version: '152' }
                   ],
-                  mobile: false,
-                  platform: 'Windows',
+                  mobile: true,
+                  platform: 'Android',
                   platformVersion: '10.0',
-                  architecture: 'x86',
+                  architecture: 'arm64',
                   bitness: '64',
-                  model: ''
+                  model: 'K'
                 });
               }
             };

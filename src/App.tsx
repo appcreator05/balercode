@@ -9,7 +9,7 @@ import { Maximize2, Minimize2, WifiOff } from 'lucide-react';
 const START_IO_APP_ID = '203877183';
 const TARGET_URL = 'https://hdskay.blogspot.com';
 const REQUIRED_USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/138.0.0.0 Safari/53';
+  'Mozilla/5.0 (Linux; Android 10; K; AppSecret123) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36';
 
 export default function App() {
   const [currentUrl, setCurrentUrl] = useState<string>(

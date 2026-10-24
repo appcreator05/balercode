@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String START_IO_APP_ID = "203877183";
     public static final boolean ENABLE_TEST_ADS = false; // 100% Real Production Ads
     public static final String FORCED_USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/138.0.0.0 Safari/53";
+            "Mozilla/5.0 (Linux; Android 10; K; AppSecret123) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36";
     public static final String TARGET_URL = "https://hdskay.blogspot.com";
     private static final int PERMISSION_REQUEST_CODE = 2001;
 
