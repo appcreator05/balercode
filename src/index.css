@@ -1,0 +1,397 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  body {
+    background-color: #0b0e14;
+    color: #f3f4f6;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+}
+
+/* Butter-smooth momentum scrolling for category rows & carousels */
+.smooth-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: auto;
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* Zero-CPU & Low-RAM optimization: Skips offscreen layout & paint until near viewport */
+.movie-card-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: 150px 240px;
+}
+
+.category-section-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: 100% 280px;
+}
+
+/* Completely remove native scrollbar width from taking layout space */
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Completely hidden scrollbar for horizontal movie rows */
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Hide YouTube Default Navigation / Action Menu */
+.fullscreen-action-menu {
+  position: absolute !important;
+  bottom: 12px !important;
+  height: 48px !important;
+  left: 24px !important;
+  right: 24px !important;
+  display: -moz-box !important;
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  -moz-box-align: center !important;
+  align-items: center !important;
+  z-index: -1 !important;
+}
+
+/* ========================================================
+   Subscription Pricing Plans Style (User-Provided)
+   ======================================================== */
+.sub-user-theme-wrapper .container h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.plan {
+  background: linear-gradient(180deg, #111, #000);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,.6);
+  transition: .3s;
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan:hover {
+  transform: translateY(-6px);
+  border-color: #e50914;
+}
+
+.plan-header {
+  background: #e50914;
+  padding: 15px;
+  text-align: center;
+  font-weight: 600;
+  color: white;
+}
+
+.plan-body {
+  padding: 25px;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 10px 0;
+  color: white;
+}
+
+.duration {
+  opacity: .8;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.device {
+  opacity: .8;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  background: #e50914;
+  color: #fff;
+  padding: 12px 25px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 15px;
+}
+
+.btn:hover {
+  background: #b80710;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Custom Alert Popup UI */
+.custom-alert-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease-in-out;
+}
+
+.custom-alert-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.custom-alert-box {
+  background: #111;
+  border: 2px solid #e50914;
+  padding: 30px;
+  border-radius: 14px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(229, 9, 20, 0.3);
+  transform: scale(0.7);
+  transition: 0.3s ease-in-out;
+}
+
+.custom-alert-overlay.show .custom-alert-box {
+  transform: scale(1);
+}
+
+.custom-alert-box .icon {
+  font-size: 45px;
+  color: #04AA6D;
+  margin-bottom: 15px;
+}
+
+.custom-alert-box h3 {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.custom-alert-box p {
+  margin: 0;
+  color: #ccc;
+  font-size: 14px;
+}
+
+/* Loading Spinner for Popup */
+.alert-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-top-color: #e50914;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-top: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================================
+   Subscription Alert Modal (Exact Match to sub.jpg)
+   ======================================================== */
+.sub-alert-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999999;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.sub-alert-overlay.show {
+  display: flex !important;
+}
+
+.sub-alert-card {
+  background: #11141b;
+  border: 1px solid #262c3a;
+  border-radius: 18px;
+  padding: 26px 22px 24px 22px;
+  max-width: 340px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+  transform: scale(0.92);
+  transition: transform 0.25s ease-out;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sub-alert-overlay.show .sub-alert-card {
+  transform: scale(1);
+}
+
+.sub-alert-icon-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ff1854 0%, #d40837 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(212, 8, 55, 0.45);
+}
+
+.sub-alert-icon-box span {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  user-select: none;
+}
+
+.sub-alert-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.3px;
+}
+
+.sub-alert-desc {
+  font-size: 13px;
+  color: #8fa0b5;
+  margin: 0 0 24px 0;
+  line-height: 1.45;
+  max-width: 250px;
+}
+
+.sub-alert-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.sub-alert-btn-cancel {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #1f2430;
+  border: 1px solid #303848;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-alert-btn-cancel:hover {
+  background: #283040;
+}
+
+.sub-alert-btn-subscribe {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ff174d;
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 20px rgba(255, 23, 77, 0.4);
+  white-space: nowrap;
+}
+
+.sub-alert-btn-subscribe:hover {
+  background: #e00c3e;
+}
+
