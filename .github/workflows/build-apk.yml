@@ -1,0 +1,99 @@
+name: Build Android APK with Start.io
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: android
+          cache-read-only: false
+
+      - name: Prepare Gradlew Permissions & Fix Line Endings
+        run: |
+          sed -i 's/\r$//' android/gradlew
+          chmod +x android/gradlew
+
+      - name: Setup Custom Keystore if provided in Secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Custom Keystore found in GitHub Secrets. Decoding to android/app/release.keystore..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+          else
+            echo "No custom keystore secret found. Defaulting to standard signing."
+          fi
+
+      - name: Build Android Release APK (Real Ads Mode)
+        working-directory: android
+        env:
+          KEYSTORE_FILE: "release.keystore"
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --stacktrace --no-daemon
+
+      - name: Prepare APK for Easy Download
+        run: |
+          mkdir -p release-apk
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk release-apk/MovieApp-v150-b200.apk
+          elif [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp android/app/build/outputs/apk/debug/app-debug.apk release-apk/MovieApp-v150-b200.apk
+          else
+            find android/app/build/outputs/apk -type f -name "*.apk" -exec cp {} release-apk/MovieApp-v150-b200.apk \;
+          fi
+          echo "Found generated APK:"
+          ls -lh release-apk/
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MovieApp-v150-b200-APK
+          path: release-apk/MovieApp-v150-b200.apk
+          retention-days: 14
+
+      - name: Publish Direct APK Download in GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        continue-on-error: true
+        with:
+          tag_name: v150
+          name: "Movie App Android APK v150 (Start.io Real Ads)"
+          body: |
+            ### 🎬 Movie App Official Android APK
+            - **App Name:** Movie App
+            - **Package Name:** `com.sayantika.eara`
+            - **Version Name:** `150` | **Version Code:** `200`
+            - **Start.io SDK:** 5.1.0 (App ID: `203877183` - Real Production Ads)
+            - **Features:** Native Splash Screen, Custom App Icon, Deep Linking (`movieapp://` & Web), Full Hardware Permissions, Offline Recovery UI
+            
+            👇 **Download directly from Assets below:**
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: release-apk/MovieApp-v150-b200.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
