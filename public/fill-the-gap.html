@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Fill The Gap - VDOSKy Games</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #1e1b4b, #020617);
+            color: white;
+            text-align: center;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)) 14px;
+        }
+
+        .top-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .icon-btn {
+            background: rgba(168, 85, 247, 0.25);
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-size: 18px;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: transform 0.1s ease, background 0.1s ease;
+        }
+        .icon-btn:active {
+            transform: scale(0.92);
+            background: rgba(168, 85, 247, 0.5);
+        }
+
+        .score-board {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #f3e8ff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+        }
+        .score-pill { color: #facc15; }
+        .best-pill { color: #38bdf8; }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0;
+            min-height: 0;
+        }
+
+        canvas {
+            height: 100%;
+            max-height: 520px;
+            aspect-ratio: 240 / 400;
+            border-radius: 14px;
+            border: 2px solid #a855f7;
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.45);
+            display: block;
+            background: #020617;
+            object-fit: contain;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 440px;
+            z-index: 10;
+        }
+
+        button.ctrl-btn {
+            flex: 1;
+            height: 58px;
+            font-size: 22px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(145deg, #7c3aed, #4c1d95);
+            color: white;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease;
+        }
+        button.ctrl-btn:active {
+            transform: scale(0.92);
+            background: linear-gradient(145deg, #9333ea, #581c87);
+        }
+
+        /* Overlay Screens */
+        .overlay-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.92);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .title-badge {
+            background: linear-gradient(135deg, #7c3aed, #4c1d95);
+            border: 2px solid #a855f7;
+            padding: 18px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.5);
+            margin-bottom: 20px;
+        }
+        .title-badge h1 {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-shadow: 0 0 15px #a855f7;
+        }
+        .title-badge p {
+            margin: 6px 0 0 0;
+            color: #d8b4fe;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 15px 44px;
+            font-size: 19px;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #581c87, 0 12px 25px rgba(168, 85, 247, 0.5);
+            margin-top: 20px;
+            transition: transform 0.1s ease;
+        }
+        .play-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #581c87, 0 6px 12px rgba(168, 85, 247, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+<audio id="bg-music" loop preload="none">
+    <source src="https://cdn.jsdelivr.net/gh/appcreator05/user@main/You-Know-Me.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+    <div class="top-bar">
+        <a href="index.html?view=games" class="icon-btn" onclick="goBack(); return false;" title="Back to Games">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <div class="score-board">
+            <span class="score-pill"><i class="fa-solid fa-star"></i> <span id="score">0</span></span>
+            <span class="best-pill"><i class="fa-solid fa-trophy"></i> <span id="high-score">0</span></span>
+        </div>
+
+        <div class="icon-btn" onclick="toggleAudio()" title="Sound Toggle">
+            <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+        </div>
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="tetris" width="240" height="400"></canvas>
+
+        <!-- Start Screen -->
+        <div class="overlay-screen" id="start-screen">
+            <div class="title-badge">
+                <h1>FILL THE GAP</h1>
+                <p>✦ Classic Tetris Puzzle Challenge ✦</p>
+            </div>
+            <p style="color: #cbd5e1; font-size: 14px; max-width: 300px; line-height: 1.5; margin: 0 0 10px 0;">
+                Fit falling blocks together and complete horizontal rows to clear lines!
+            </p>
+            <button class="play-btn" onclick="startGame()">PLAY NOW</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="overlay-screen" id="game-over-screen" style="display: none;">
+            <div style="font-size: 44px; color: #ef4444; margin-bottom: 10px;">
+                <i class="fa-solid fa-skull"></i>
+            </div>
+            <h2 style="font-size: 32px; font-weight: 900; margin: 0 0 10px 0; color: #f87171;">GAME OVER</h2>
+            <div style="font-size: 24px; color: #facc15; font-weight: 800; margin-bottom: 6px;">
+                Score: <span id="final-score">0</span>
+            </div>
+            <div style="font-size: 15px; color: #38bdf8; font-weight: 700; margin-bottom: 18px;">
+                Best Record: <span id="game-over-best">0</span>
+            </div>
+            <button class="play-btn" onclick="restartGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="ctrl-btn" onclick="move(-1)" title="Left">◀</button>
+        <button class="ctrl-btn" onclick="rotate()" title="Rotate">↻</button>
+        <button class="ctrl-btn" onclick="drop()" title="Soft Drop">▼</button>
+        <button class="ctrl-btn" onclick="hardDrop()" title="Hard Drop">⤓</button>
+        <button class="ctrl-btn" onclick="move(1)" title="Right">▶</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('tetris');
+const ctx = canvas.getContext('2d');
+ctx.scale(20, 20);
+
+const scoreEl = document.getElementById('score');
+const highScoreEl = document.getElementById('high-score');
+const startScreen = document.getElementById('start-screen');
+const gameOverScreen = document.getElementById('game-over-screen');
+const finalScoreEl = document.getElementById('final-score');
+const gameOverBestEl = document.getElementById('game-over-best');
+const bgMusic = document.getElementById('bg-music');
+const soundIcon = document.getElementById('sound-icon');
+
+let isSoundOn = true;
+let gameRunning = false;
+let highScore = parseInt(localStorage.getItem('fill_the_gap_high_score') || '0', 10);
+highScoreEl.innerText = highScore;
+
+function goBack() {
+    window.location.href = 'index.html?view=games';
+}
+
+function toggleAudio() {
+    isSoundOn = !isSoundOn;
+    if (isSoundOn) {
+        soundIcon.className = "fa-solid fa-volume-high";
+        if (gameRunning) bgMusic.play().catch(() => {});
+    } else {
+        soundIcon.className = "fa-solid fa-volume-xmark";
+        bgMusic.pause();
+    }
+}
+
+// Crisp Synthesizer sound effects
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function playSound(freq, duration = 0.1, type = 'sine') {
+    if (!isSoundOn) return;
+    try {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+}
+
+function createMatrix(w, h){
+    return Array.from({length: h}, () => Array(w).fill(0));
+}
+
+/* Different values for each shape */
+function createPiece(type){
+    if(type==='T') return [[0,1,0],[1,1,1],[0,0,0]];
+    if(type==='O') return [[2,2],[2,2]];
+    if(type==='L') return [[0,3,0],[0,3,0],[0,3,3]];
+    if(type==='J') return [[0,4,0],[0,4,0],[4,4,0]];
+    if(type==='I') return [[0,5,0,0],[0,5,0,0],[0,5,0,0],[0,5,0,0]];
+    if(type==='S') return [[0,6,6],[6,6,0],[0,0,0]];
+    if(type==='Z') return [[7,7,0],[0,7,7],[0,0,0]];
+}
+
+/* Multi Neon Color */
+function drawMatrix(matrix, offset, ghost = false){
+    const colorSet = [
+        null,
+        ["#22d3ee", "#0ea5e9"], // cyan
+        ["#facc15", "#eab308"], // yellow
+        ["#f472b6", "#db2777"], // pink
+        ["#4ade80", "#16a34a"], // green
+        ["#a855f7", "#6d28d9"], // purple
+        ["#fb923c", "#ea580c"], // orange
+        ["#f87171", "#dc2626"]  // red
+    ];
+
+    matrix.forEach((row, y) => {
+        row.forEach((value, x) => {
+            if(value !== 0){
+                const px = x + offset.x;
+                const py = y + offset.y;
+
+                const gradient = ctx.createLinearGradient(px, py, px + 1, py + 1);
+                gradient.addColorStop(0, colorSet[value][0]);
+                gradient.addColorStop(1, colorSet[value][1]);
+
+                ctx.globalAlpha = ghost ? 0.22 : 1;
+
+                ctx.fillStyle = gradient;
+                ctx.shadowColor = colorSet[value][0];
+                ctx.shadowBlur = ghost ? 0 : 12;
+
+                ctx.beginPath();
+                ctx.roundRect(px, py, 1, 1, 0.25);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        });
+    });
+}
+
+function collide(arena, p){
+    for(let y = 0; y < p.matrix.length; y++){
+        for(let x = 0; x < p.matrix[y].length; x++){
+            if(p.matrix[y][x] &&
+              (arena[y + p.pos.y] &&
+              arena[y + p.pos.y][x + p.pos.x]) !== 0){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function merge(arena, p){
+    p.matrix.forEach((row, y) => {
+        row.forEach((v, x) => {
+            if(v) arena[y + p.pos.y][x + p.pos.x] = v;
+        });
+    });
+}
+
+function rotateMatrix(m){
+    for(let y = 0; y < m.length; y++){
+        for(let x = 0; x < y; x++){
+            [m[x][y], m[y][x]] = [m[y][x], m[x][y]];
+        }
+    }
+    m.forEach(r => r.reverse());
+}
+
+function playerRotate(){
+    if (!gameRunning) return;
+    const pos = player.pos.x;
+    let offset = 1;
+    rotateMatrix(player.matrix);
+
+    while(collide(arena, player)){
+        player.pos.x += offset;
+        offset = -(offset + (offset > 0 ? 1 : -1));
+        if(offset > player.matrix[0].length){
+            rotateMatrix(player.matrix);
+            player.pos.x = pos;
+            return;
+        }
+    }
+    playSound(440, 0.08, 'triangle');
+}
+
+function playerDrop(){
+    if (!gameRunning) return;
+    player.pos.y++;
+    if(collide(arena, player)){
+        player.pos.y--;
+        merge(arena, player);
+        playSound(220, 0.07, 'square');
+        reset();
+        sweep();
+    }
+    dropCounter = 0;
+}
+
+function hardDrop(){
+    if (!gameRunning) return;
+    while(!collide(arena, player)){
+        player.pos.y++;
+    }
+    player.pos.y--;
+    playerDrop();
+}
+
+function sweep(){
+    let linesCleared = 0;
+    for(let y = arena.length - 1; y >= 0; y--){
+        if(arena[y].every(v => v !== 0)){
+            arena.splice(y, 1);
+            arena.unshift(new Array(12).fill(0));
+            linesCleared++;
+            player.score += 10;
+            y++;
+        }
+    }
+    if (linesCleared > 0) {
+        playSound(587.33, 0.25, 'sine');
+        if (linesCleared >= 4) {
+            player.score += 40; // Tetris bonus
+        }
+    }
+    updateScore();
+}
+
+function reset(){
+    const pieces = "TJLOSZI";
+    player.matrix = createPiece(pieces[Math.random() * 7 | 0]);
+    player.pos = {x: 4, y: 0};
+
+    if(collide(arena, player)){
+        endGame();
+    }
+}
+
+function updateScore(){
+    scoreEl.innerText = player.score;
+    if (player.score > highScore) {
+        highScore = player.score;
+        highScoreEl.innerText = highScore;
+        localStorage.setItem('fill_the_gap_high_score', highScore.toString());
+    }
+}
+
+function draw(){
+    ctx.fillStyle = "#020617";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (player.matrix) {
+        let ghostPos = {...player.pos};
+        while(!collide(arena, {matrix: player.matrix, pos: ghostPos})){
+            ghostPos.y++;
+        }
+        ghostPos.y--;
+        drawMatrix(player.matrix, ghostPos, true);
+
+        drawMatrix(arena, {x: 0, y: 0});
+        drawMatrix(player.matrix, player.pos);
+    }
+}
+
+let dropCounter = 0;
+let dropInterval = 700;
+let last = 0;
+
+function update(time = 0){
+    if (gameRunning) {
+        const delta = time - last;
+        dropCounter += delta;
+        if(dropCounter > dropInterval) playerDrop();
+        last = time;
+        draw();
+    }
+    requestAnimationFrame(update);
+}
+
+const arena = createMatrix(12, 20);
+const player = {pos: {x: 0, y: 0}, matrix: null, score: 0};
+
+document.addEventListener("keydown", e => {
+    if(e.keyCode === 37) move(-1);
+    if(e.keyCode === 39) move(1);
+    if(e.keyCode === 40) drop();
+    if(e.keyCode === 38) rotate();
+    if(e.keyCode === 32) hardDrop();
+});
+
+window.move = dir => { 
+    if (!gameRunning) return;
+    player.pos.x += dir; 
+    if(collide(arena, player)) player.pos.x -= dir; 
+    playSound(320, 0.05, 'sine');
+}
+window.rotate = () => playerRotate();
+window.drop = () => playerDrop();
+window.hardDrop = () => hardDrop();
+
+function startGame() {
+    startScreen.style.display = 'none';
+    gameOverScreen.style.display = 'none';
+    arena.forEach(r => r.fill(0));
+    player.score = 0;
+    updateScore();
+    reset();
+    gameRunning = true;
+    if (isSoundOn) {
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(() => {});
+    }
+    last = performance.now();
+}
+
+function endGame() {
+    gameRunning = false;
+    bgMusic.pause();
+    playSound(140, 0.4, 'sawtooth');
+    finalScoreEl.innerText = player.score;
+    gameOverBestEl.innerText = highScore;
+    gameOverScreen.style.display = 'flex';
+}
+
+function restartGame() {
+    startGame();
+}
+
+// Initial preview draw
+draw();
+requestAnimationFrame(update);
+</script>
+
+</body>
+</html>

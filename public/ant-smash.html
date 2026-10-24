@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ant Smash - VDOSKy Games</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: #1a0f08; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        #game-wrapper {
+            position: relative; width: 100vw; height: 100vh; overflow: hidden;
+            background: #d2b48c url('./games/ant-smash/assets/background.jpg') center center / cover no-repeat;
+        }
+        canvas { 
+            display: block; width: 100%; height: 100%;
+        }
+        #back-btn {
+            position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px;
+            background: rgba(0, 0, 0, 0.7); color: #fff;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            text-decoration: none; font-size: 20px; z-index: 110;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        #back-btn:active {
+            transform: scale(0.92);
+            background: rgba(0, 0, 0, 0.9);
+        }
+        #ui {
+            position: absolute; top: max(12px, env(safe-area-inset-top)); right: 12px;
+            font-size: 16px; font-weight: 800; color: #fff;
+            background: rgba(0, 0, 0, 0.7); padding: 8px 18px;
+            border-radius: 30px; z-index: 100; pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex; align-items: center; gap: 12px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .score-pill { color: #facc15; }
+        .lives-pill { color: #ef4444; }
+
+        #sound-toggle {
+            position: absolute; top: max(12px, env(safe-area-inset-top)); right: 175px;
+            background: rgba(0,0,0,0.7); color: #fff;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 18px; z-index: 100; border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+        }
+
+        #start-screen, #game-over {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 29, 0.88); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200; color: white;
+            text-align: center; padding: 20px;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        #game-over { display: none; }
+
+        .game-title-box {
+            background: linear-gradient(135deg, #78350f, #451a03);
+            border: 3px solid #f59e0b;
+            padding: 16px 32px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.3);
+            margin-bottom: 16px;
+        }
+        h1 { 
+            margin: 0; color: #fef08a; font-size: 38px; font-weight: 900;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+        .sub-tag { color: #86efac; font-size: 15px; margin: 6px 0 0 0; font-weight: 600; }
+
+        .btn {
+            padding: 15px 44px; font-size: 20px; font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;
+            border-radius: 50px; cursor: pointer; margin-top: 24px;
+            box-shadow: 0 6px 0 #047857, 0 12px 20px rgba(16, 185, 129, 0.4);
+            letter-spacing: 0.5px; transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #047857, 0 6px 12px rgba(16, 185, 129, 0.4);
+        }
+        .btn-replay {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 6px 0 #b45309, 0 12px 20px rgba(245, 158, 11, 0.4);
+        }
+        .btn-replay:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b45309, 0 6px 12px rgba(245, 158, 11, 0.4);
+        }
+        .instructions {
+            color: #cbd5e1; font-size: 15px; max-width: 320px; line-height: 1.5; margin: 12px 0;
+        }
+        .high-score-text {
+            color: #38bdf8; font-size: 15px; font-weight: 700; margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <audio id="bg-music" loop preload="none">
+            <source src="https://cdn.jsdelivr.net/gh/appcreator05/user@main/You-Know-Me.mp3" type="audio/mpeg">
+        </audio>
+
+        <a href="index.html?view=games" id="back-btn" onclick="goBack(); return false;" title="Back to Games">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <div id="sound-toggle" onclick="toggleAudio()" title="Sound Toggle">
+            <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+        </div>
+
+        <div id="ui">
+            <span class="score-pill"><i class="fa-solid fa-star"></i> <span id="score">0</span></span>
+            <span class="lives-pill"><i class="fa-solid fa-heart"></i> <span id="lives">3</span></span>
+        </div>
+
+        <div id="start-screen">
+            <div class="game-title-box">
+                <h1>ANT SMASH</h1>
+                <div class="sub-tag"><i class="fa-solid fa-shield-virus"></i> Defend the Wooden Table!</div>
+            </div>
+            <p class="instructions">Tap or touch fast to smash the invading bugs before they reach the top!</p>
+            <div class="high-score-text" id="best-score-display">High Score: 0</div>
+            <button class="btn" onclick="startGame()">PLAY NOW</button>
+        </div>
+
+        <div id="game-over">
+            <h2 style="color: #ef4444; font-size: 32px; margin: 0 0 10px 0; font-weight: 900;">GAME OVER!</h2>
+            <p style="font-size: 26px; color: #facc15; margin: 0; font-weight: 800;">
+                Score: <span id="final-score">0</span>
+            </p>
+            <p style="font-size: 16px; color: #94a3b8; margin: 8px 0 0 0;" id="game-over-best">
+                Best Record: 0
+            </p>
+            <button class="btn btn-replay" onclick="resetGame()">PLAY AGAIN</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const bgMusic = document.getElementById("bg-music");
+    let isSoundOn = true;
+
+    // Load High Score
+    let highScore = parseInt(localStorage.getItem('ant_smash_high_score') || '0', 10);
+    const bestScoreDisplay = document.getElementById('best-score-display');
+    if (bestScoreDisplay) bestScoreDisplay.innerText = "High Score: " + highScore;
+
+    function goBack() {
+        window.location.href = 'index.html?view=games';
+    }
+
+    function toggleAudio() {
+        isSoundOn = !isSoundOn;
+        const icon = document.getElementById('sound-icon');
+        if (isSoundOn) {
+            if (icon) icon.className = "fa-solid fa-volume-high";
+            if (gameActive) bgMusic.play().catch(() => {});
+        } else {
+            if (icon) icon.className = "fa-solid fa-volume-xmark";
+            bgMusic.pause();
+        }
+    }
+
+    // Web Audio Synthesizer for instant crisp smash effect
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    function playSmashSound() {
+        if (!isSoundOn) return;
+        try {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.12);
+        } catch (e) {}
+    }
+
+    let score = 0, lives = 3, insects = [], splats = [], gameActive = false;
+    let cssWidth = window.innerWidth;
+    let cssHeight = window.innerHeight;
+
+    function resize() {
+        cssWidth = window.innerWidth;
+        cssHeight = window.innerHeight;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = cssWidth * dpr;
+        canvas.height = cssHeight * dpr;
+        ctx.resetTransform?.();
+        ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Local assets uploaded by user
+    const insectLinks = [
+        "./games/ant-smash/assets/biche.png",
+        "./games/ant-smash/assets/machi.png",
+        "./games/ant-smash/assets/makorsa.png",
+        "./games/ant-smash/assets/makorsa2.png",
+        "./games/ant-smash/assets/makorsa3.png",
+        "./games/ant-smash/assets/pipre.png",
+        "./games/ant-smash/assets/pipre2.png"
+    ];
+
+    const loadedImages = insectLinks.map(src => {
+        const img = new Image();
+        img.src = src;
+        return img;
+    });
+
+    class Insect {
+        constructor() {
+            this.img = loadedImages[Math.floor(Math.random() * loadedImages.length)];
+            this.size = Math.min(Math.max(cssWidth * 0.16, 62), 85); 
+            this.x = Math.random() * (cssWidth - this.size) + this.size/2;
+            this.y = cssHeight + 70;
+            this.speed = Math.random() * 1.4 + 1.3 + (score * 0.025);
+            this.angle = 0;
+            this.dead = false;
+            this.wobbleSpeed = Math.random() * 0.05 + 0.03;
+        }
+        update() {
+            this.y -= this.speed;
+            this.angle = Math.sin(this.y * this.wobbleSpeed) * 0.25;
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            if (this.img && this.img.complete && this.img.naturalWidth > 0) {
+                ctx.drawImage(this.img, -this.size/2, -this.size/2, this.size, this.size);
+            } else {
+                // Fallback rendering
+                ctx.fillStyle = "#854d0e";
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size/2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+    }
+
+    class Splat {
+        constructor(x, y) {
+            this.x = x; this.y = y;
+            this.particles = [];
+            const count = Math.floor(Math.random() * 6) + 12;
+            for (let i = 0; i < count; i++) {
+                let ang = Math.random() * Math.PI * 2;
+                let d = Math.random() * 32;
+                this.particles.push({ 
+                    dx: Math.cos(ang) * d, 
+                    dy: Math.sin(ang) * d, 
+                    r: Math.random() * 5 + 3 
+                });
+            }
+            this.timer = setTimeout(() => this.remove = true, 2200);
+            this.remove = false;
+        }
+        draw() {
+            ctx.fillStyle = "rgba(185, 28, 28, 0.85)";
+            ctx.beginPath();
+            this.particles.forEach(p => {
+                ctx.moveTo(this.x + p.dx, this.y + p.dy);
+                ctx.arc(this.x + p.dx, this.y + p.dy, p.r, 0, Math.PI * 2);
+            });
+            ctx.fill();
+        }
+    }
+
+    function startGame() {
+        document.getElementById("start-screen").style.display = "none";
+        gameActive = true;
+        if (isSoundOn) {
+            bgMusic.play().catch(() => {});
+        }
+        requestAnimationFrame(gameLoop);
+        spawn();
+    }
+
+    function spawn() {
+        if (!gameActive) return;
+        insects.push(new Insect());
+        let delay = Math.max(450, 1150 - (score * 12));
+        setTimeout(spawn, delay);
+    }
+
+    function gameLoop() {
+        if (!gameActive) return;
+        ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+        for (let i = splats.length - 1; i >= 0; i--) {
+            splats[i].draw();
+            if (splats[i].remove) splats.splice(i, 1);
+        }
+
+        for (let i = insects.length - 1; i >= 0; i--) {
+            insects[i].update();
+            insects[i].draw();
+            if (insects[i].y < -80) {
+                insects.splice(i, 1);
+                lives--;
+                document.getElementById("lives").innerText = lives;
+                if (lives <= 0) {
+                    endGame();
+                    return;
+                }
+            }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function hitDetection(clientX, clientY) {
+        if (!gameActive) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        for (let i = insects.length - 1; i >= 0; i--) {
+            let ins = insects[i];
+            let dist = Math.hypot(ins.x - x, ins.y - y);
+            
+            if (dist < (ins.size * 0.75)) {
+                splats.push(new Splat(ins.x, ins.y));
+                insects.splice(i, 1);
+                score++;
+                playSmashSound();
+                document.getElementById("score").innerText = score;
+                break;
+            }
+        }
+    }
+
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            hitDetection(touch.clientX, touch.clientY);
+        }
+    }, { passive: false });
+
+    canvas.addEventListener("mousedown", (e) => {
+        hitDetection(e.clientX, e.clientY);
+    });
+
+    function endGame() {
+        gameActive = false;
+        bgMusic.pause();
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('ant_smash_high_score', highScore.toString());
+        }
+        document.getElementById("game-over").style.display = "flex";
+        document.getElementById("final-score").innerText = score;
+        const gameOverBest = document.getElementById("game-over-best");
+        if (gameOverBest) gameOverBest.innerText = "Best Record: " + highScore;
+    }
+
+    function resetGame() {
+        score = 0; lives = 3; insects = []; splats = [];
+        document.getElementById("score").innerText = "0";
+        document.getElementById("lives").innerText = "3";
+        document.getElementById("game-over").style.display = "none";
+        gameActive = true;
+        if (isSoundOn) {
+            bgMusic.currentTime = 0;
+            bgMusic.play().catch(() => {});
+        }
+        spawn();
+        requestAnimationFrame(gameLoop);
+    }
+</script>
+
+</body>
+</html>
